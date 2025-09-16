@@ -12,7 +12,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Logo } from "@/components/logo"
 import { useUser } from "@/contexts/user-context"
 import type { Provider } from "@/lib/supabase"
-import { supabase } from "@/lib/supabase"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -27,18 +26,8 @@ export default function LoginPage() {
 
   // Check if we're already logged in
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data } = await supabase.auth.getSession()
-      if (data.session) {
-        setAuthStatus(`Already logged in as ${data.session.user.email}. Redirecting...`)
-        // If we're already logged in, redirect to home
-        window.location.href = "/"
-      } else {
-        setAuthStatus("Not logged in")
-      }
-    }
-
-    checkAuth()
+    // Since we're using mock user system, always show as logged in
+    setAuthStatus("Using mock user system - always logged in")
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -93,30 +82,17 @@ export default function LoginPage() {
   const handleDirectLogin = async () => {
     setIsLoading(true)
     setError(null)
-    setAuthStatus("Attempting direct login...")
+    setAuthStatus("Using mock user system - login always succeeds")
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (error) {
-        console.error("Direct login error:", error)
-        setError(error.message)
-        setAuthStatus(`Direct login failed: ${error.message}`)
-      } else if (data.session) {
-        console.log("Direct login successful!")
-        setAuthStatus("Direct login successful! Redirecting...")
-        window.location.href = "/"
-      } else {
-        setError("Login succeeded but no session was created")
-        setAuthStatus("Direct login failed: No session created")
-      }
+      // Since we're using mock user system, always succeed
+      console.log("Mock login successful!")
+      setAuthStatus("Mock login successful! Redirecting...")
+      window.location.href = "/"
     } catch (err) {
-      console.error("Unexpected direct login error:", err)
-      setError("An unexpected error occurred during direct login")
-      setAuthStatus("Direct login failed: Unexpected error")
+      console.error("Mock login error:", err)
+      setError("An unexpected error occurred")
+      setAuthStatus("Mock login failed: Unexpected error")
     } finally {
       setIsLoading(false)
     }
