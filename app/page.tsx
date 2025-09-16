@@ -17,6 +17,7 @@ import { RecipeCard } from "@/components/recipe-card";
 import { Logo } from "@/components/logo";
 import type { Recipe } from "@/lib/types";
 import { useUser } from "@/contexts/user-context";
+import { analytics } from "@/lib/analytics";
 
 export default function RecipeCollector() {
   const [url, setUrl] = useState("");
@@ -142,6 +143,9 @@ export default function RecipeCollector() {
   const handleSearch = () => {
     const results = searchRecipes(recipes, searchQuery);
     setFilteredRecipes(results);
+
+    // Track search
+    analytics.trackSearch(searchQuery, results.length);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -165,6 +169,9 @@ export default function RecipeCollector() {
         )
       );
     }
+
+    // Track category filter
+    analytics.trackCategoryFilter(category);
   };
 
   const handleTagsUpdate = (recipeId: string, newTags: string[]) => {

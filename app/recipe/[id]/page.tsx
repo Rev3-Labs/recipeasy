@@ -26,6 +26,7 @@ import { TagEditor } from "@/components/tag-editor";
 import { DeleteRecipeDialog } from "@/components/delete-recipe-dialog";
 import { StarRating } from "@/components/star-rating";
 import { FavoriteButton } from "@/components/favorite-button";
+import { analytics } from "@/lib/analytics";
 
 export default function RecipePage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -80,6 +81,9 @@ export default function RecipePage({ params }: { params: { id: string } }) {
           setUserRating(foundRecipe.userRating || 0);
           setIsFavorite(foundRecipe.isFavorite || false);
           setImageError(false);
+
+          // Track recipe view
+          analytics.trackRecipeViewed(foundRecipe.id, foundRecipe.title);
         }
 
         // Generate available tags from all recipes
@@ -242,6 +246,9 @@ export default function RecipePage({ params }: { params: { id: string } }) {
     // Update local state immediately for better UX
     setUserRating(rating);
 
+    // Track recipe rating
+    analytics.trackRecipeRated(recipe.id, rating);
+
     // Create updated recipe
     const updatedRecipe = { ...recipe, userRating: rating };
 
@@ -264,6 +271,9 @@ export default function RecipePage({ params }: { params: { id: string } }) {
     // Update local state immediately for better UX
     const newFavoriteState = !isFavorite;
     setIsFavorite(newFavoriteState);
+
+    // Track favorite toggle
+    analytics.trackRecipeFavorited(recipe.id, newFavoriteState);
 
     // Create updated recipe
     const updatedRecipe = { ...recipe, isFavorite: newFavoriteState };
