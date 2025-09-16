@@ -47,6 +47,8 @@ export default function RecipePage({ params }: { params: { id: string } }) {
   const [editedImage, setEditedImage] = useState("");
   const [editingComments, setEditingComments] = useState(false);
   const [comments, setComments] = useState("");
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState("");
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [userRating, setUserRating] = useState<number>(0);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
@@ -78,6 +80,7 @@ export default function RecipePage({ params }: { params: { id: string } }) {
           setEditedServings(foundRecipe.yield || "");
           setEditedImage(foundRecipe.image || "");
           setComments(foundRecipe.comments || "");
+          setEditedTitle(foundRecipe.title);
           setUserRating(foundRecipe.userRating || 0);
           setIsFavorite(foundRecipe.isFavorite || false);
           setImageError(false);
@@ -211,6 +214,24 @@ export default function RecipePage({ params }: { params: { id: string } }) {
       setEditingComments(false);
     } catch (error) {
       console.error("Error saving comments:", error);
+    }
+  };
+
+  const handleSaveTitle = async () => {
+    if (!recipe || !user || !editedTitle.trim()) return;
+
+    // Create updated recipe
+    const updatedRecipe = { ...recipe, title: editedTitle.trim() };
+
+    try {
+      // Update in localStorage
+      await updateRecipe(updatedRecipe, user.id);
+
+      // Update state
+      setRecipe(updatedRecipe);
+      setEditingTitle(false);
+    } catch (error) {
+      console.error("Error saving title:", error);
     }
   };
 
@@ -411,10 +432,61 @@ export default function RecipePage({ params }: { params: { id: string } }) {
             >
               <ChevronLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-lg font-medium truncate">{recipe.title}</h1>
+            {!editingTitle ? (
+              <h1 className="text-lg font-medium truncate">{recipe.title}</h1>
+            ) : (
+              <div className="flex items-center gap-2 flex-1">
+                <Input
+                  value={editedTitle}
+                  onChange={(e) => setEditedTitle(e.target.value)}
+                  className="text-lg font-medium h-8"
+                  placeholder="Recipe title"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSaveTitle();
+                    } else if (e.key === "Escape") {
+                      setEditingTitle(false);
+                      setEditedTitle(recipe.title);
+                    }
+                  }}
+                  autoFocus
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 p-0"
+                  onClick={handleSaveTitle}
+                  disabled={!editedTitle.trim()}
+                >
+                  <Save className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 p-0"
+                  onClick={() => {
+                    setEditingTitle(false);
+                    setEditedTitle(recipe.title);
+                  }}
+                >
+                  <ChevronLeft className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
+            {!editingTitle && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 p-0"
+                onClick={() => setEditingTitle(true)}
+                disabled={loading}
+              >
+                <Edit2 className="h-4 w-4" />
+              </Button>
+            )}
             <FavoriteButton
               isFavorite={isFavorite}
               onToggle={handleToggleFavorite}
@@ -438,7 +510,57 @@ export default function RecipePage({ params }: { params: { id: string } }) {
             {/* Left side - Title, description, and metadata */}
             <div className="space-y-6">
               <div className="space-y-4">
-                <h1 className="text-3xl font-bold">{recipe.title}</h1>
+                {!editingTitle ? (
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-3xl font-bold">{recipe.title}</h1>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 p-0"
+                      onClick={() => setEditingTitle(true)}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={editedTitle}
+                      onChange={(e) => setEditedTitle(e.target.value)}
+                      className="text-3xl font-bold h-12"
+                      placeholder="Recipe title"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handleSaveTitle();
+                        } else if (e.key === "Escape") {
+                          setEditingTitle(false);
+                          setEditedTitle(recipe.title);
+                        }
+                      }}
+                      autoFocus
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 p-0"
+                      onClick={handleSaveTitle}
+                      disabled={!editedTitle.trim()}
+                    >
+                      <Save className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 p-0"
+                      onClick={() => {
+                        setEditingTitle(false);
+                        setEditedTitle(recipe.title);
+                      }}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
 
                 {recipe.description && (
                   <p className="text-muted-foreground text-lg leading-relaxed">
